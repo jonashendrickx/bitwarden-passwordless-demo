@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from "react";
 import * as Passwordless from "@passwordlessdev/passwordless-client";
-import {BACKEND_URL, PASSWORDLESS_API_KEY, PASSWORDLESS_API_URL} from "../configuration/PasswordlessOptions";
+import {PASSWORDLESS_API_KEY, PASSWORDLESS_API_URL} from "../configuration/PasswordlessOptions";
 import { ToastContainer, toast } from 'react-toastify';
 import YourBackendClient from "../services/YourBackendClient";
 
@@ -26,19 +26,29 @@ export default function RegisterPage() {
     }, [user]);
 
     const handleSubmit = async (e) => {
-        const p = new Passwordless.Client({
-            apiKey: PASSWORDLESS_API_KEY,
-            apiUrl: PASSWORDLESS_API_URL
-        });
+        let registerToken = null;
+        try {
+            const yourBackendClient = new YourBackendClient();
+            registerToken = await yourBackendClient.register(user, firstName, lastName, alias);
+        }
+        catch (error)
+        {
+            toast(error.message, {
+                className: 'toast-error'
+            });
+        }
 
-        debugger;
-        const yourBackendClient = new YourBackendClient();
-        const registerToken = await yourBackendClient.register(user, firstName, lastName, alias);
-        const finalResponse = await p.register(registerToken.token, alias);
+        // If an error previously happened, 'registerToken' will be null, so you don't want to register a token.
+        if (registerToken) {
+            const p = new Passwordless.Client({
+                apiKey: PASSWORDLESS_API_KEY,
+                apiUrl: PASSWORDLESS_API_URL
+            });
+            const finalResponse = await p.register(registerToken.token, alias);
 
-        // do proper error handling here...
-        if (finalResponse) {
-            toast(`Registered '${alias}'!`);
+            if (finalResponse) {
+                toast(`Registered '${alias}'!`);
+            }
         }
     };
 

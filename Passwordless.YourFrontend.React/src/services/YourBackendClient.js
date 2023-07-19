@@ -1,10 +1,6 @@
 import {BACKEND_URL} from "../configuration/PasswordlessOptions";
 
 export default class YourBackendClient {
-    constructor() {
-
-    }
-
     async register(user, firstName, lastName, deviceName) {
         const request = {
             username: user,
@@ -12,16 +8,26 @@ export default class YourBackendClient {
             lastName: lastName,
             deviceName: deviceName
         };
-        const registerToken = await fetch(`${BACKEND_URL}/signup`,
-            {
-                method: 'post',
-                body: JSON.stringify(request),
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            }).then(r => r.json());
-        return registerToken;
+
+        const response = await fetch(`${BACKEND_URL}/signup`, {
+            method: 'post',
+            body: JSON.stringify(request),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const problemDetails = await response.json();
+            if (problemDetails && problemDetails.detail) {
+                throw new Error(problemDetails.detail);
+            } else {
+                throw new Error(`An unknown error prevented us from obtaining a registration token.`);
+            }
+        }
+
+        return await response.json();
     }
 
     async signIn(token) {
