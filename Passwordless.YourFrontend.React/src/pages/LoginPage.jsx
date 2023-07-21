@@ -2,6 +2,7 @@ import {useContext, useRef, useState} from "react";
 import authContext from "../context/AuthProvider";
 import * as Passwordless from "@passwordlessdev/passwordless-client";
 import YourBackendClient from "../services/YourBackendClient";
+import {PASSWORDLESS_API_KEY, PASSWORDLESS_API_URL} from "../configuration/PasswordlessOptions";
 
 export default function LoginPage() {
     const errRef = useRef();
@@ -12,8 +13,8 @@ export default function LoginPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const passwordless = new Passwordless.Client({
-            apiUrl: "http://localhost:7001",
-            apiKey: "onboarding:public:c608fc7fafa04b7884934c0d5616ac0c"
+            apiUrl: PASSWORDLESS_API_URL,
+            apiKey: PASSWORDLESS_API_KEY
         });
         const yourBackendClient = new YourBackendClient()
         const token = await passwordless.signinWithDiscoverable();
